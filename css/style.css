@@ -1,0 +1,49 @@
+h1 {
+  font-family: "Quicksand", sans-serif;
+  text-align: center;
+}
+
+.container-pokemones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Automatically adjusts */
+  gap: 1rem;
+  width: 90%;
+  margin: 0 auto;
+}
+
+#info-pokemon img {
+  width: 100%;
+  max-width: 150px; /* Prevents the image from growing too large */
+  height: auto;
+}
+
+@media (max-width: 768px) {
+  /* Tablets */
+  #info-pokemon {
+    width: 95%;
+    max-width: 350px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Mobile devices */
+  h1 {
+    font-size: 1.2rem;
+    text-align: center;
+  }
+
+  .container-pokemones div {
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+
+  #info-pokemon img {
+    max-width: 120px;
+  }
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
