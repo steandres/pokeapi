@@ -1,4 +1,4 @@
-name: Build and Push Docker image
+name: Build, Push and Deploy Docker image
 
 on:
   push:
@@ -23,4 +23,47 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/pokeapi-app:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/pokeapi-app:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/pokeapi-app:${{ github.sha }}
+
+      - name: Deploy to AWS EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script_stop: true
+          script: |
+            echo "🚀 Starting deployment on EC2 at $(date)"
+
+            # Mostrar contenedores actuales
+            echo "🔍 Current containers:"
+            sudo docker ps -a
+
+            # Detener y eliminar el contenedor anterior si existe
+            echo "🛑 Stopping old container..."
+            sudo docker stop pokeapi_app || true
+            sudo docker rm pokeapi_app || true
+
+            # Limpiar imágenes antiguas para liberar espacio
+            echo "🧹 Cleaning up old Docker images..."
+            sudo docker system prune -af
+
+            # Descargar la nueva versión desde Docker Hub
+            echo "⬇️ Pulling latest Docker image..."
+            sudo docker pull estephanc/pokeapi-app:latest
+
+            # Crear y ejecutar el nuevo contenedor
+            echo "🚀 Starting new container..."
+            sudo docker run -d --restart=always --name pokeapi_app -p 80:80 estephanc/pokeapi-app:latest
+
+            # Mostrar logs recientes del contenedor
+            echo "📜 Container logs (last 20 lines):"
+            sudo docker logs --tail 20 pokeapi_app
+
+            # Confirmar estado final
+            echo "✅ Active containers after deployment:"
+            sudo docker ps
+
+            echo "🎉 Deployment completed successfully at $(date)"
